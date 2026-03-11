@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+    push:
+        branches: [main]
+
+permissions: #permissions pour GitHub Pages
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: pages
+    cancel-in-progress: true
+
+jobs:
+    ci:
+        uses: ./.github/workflows/ci.yml #réutilise le workflow CI existant
+        secrets: inherit
+    
+    deploy:
+        needs: ci
+        runs-on: ubuntu-latest
+        environment: 
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Pages
+              uses: actions/configure-pages@v4
+
+            - name: Upload statis file
+              uses: actions/uploads-pages-artifact@v4
+              with: 
+                path: public/
+
+            - name: Deploy
+              uses: actions/deploy-pages@v4
+            
+            
+
